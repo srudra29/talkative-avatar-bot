@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Mic, MicOff, Volume2, VolumeX, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import MessageBubble from './MessageBubble';
 import VoiceControls from './VoiceControls';
 import AccessibilityControls from './AccessibilityControls';
+import LanguageSelector from './LanguageSelector';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface Message {
   id: string;
@@ -29,6 +30,7 @@ const ConversationInterface = () => {
   const [fontSize, setFontSize] = useState('medium');
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { t, currentLanguage } = useLanguage();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -42,11 +44,11 @@ const ConversationInterface = () => {
     document.documentElement.style.fontSize = fontSize === 'large' ? '18px' : fontSize === 'small' ? '14px' : '16px';
   }, [darkMode, highContrast, fontSize]);
 
-  // Initialize with a welcome message
+  // Initialize with a welcome message in the selected language
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
-      text: "Hello! I'm your AI sales representative. I'm here to help you with any questions about our products and services. You can type your message or use voice input. How can I assist you today?",
+      text: t('welcome_message'),
       sender: 'bot',
       timestamp: new Date(),
       type: 'text'
@@ -57,25 +59,26 @@ const ConversationInterface = () => {
     if (speechEnabled) {
       speakText(welcomeMessage.text);
     }
-  }, []);
+  }, [currentLanguage.code, speechEnabled, t]);
 
   const speakText = async (text: string) => {
     if (!speechEnabled) return;
     
     try {
-      // Use Web Speech API for text-to-speech
+      // Use Web Speech API for text-to-speech with language support
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 0.9;
       utterance.pitch = 1;
       utterance.volume = 0.8;
+      utterance.lang = currentLanguage.speechCode;
       
-      // Try to use a professional voice
+      // Try to use a voice that matches the current language
       const voices = speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.name.includes('Google') || voice.name.includes('Microsoft')
+      const languageVoice = voices.find(voice => 
+        voice.lang.startsWith(currentLanguage.speechCode.split('-')[0])
       );
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      if (languageVoice) {
+        utterance.voice = languageVoice;
       }
       
       speechSynthesis.speak(utterance);
@@ -179,7 +182,7 @@ const ConversationInterface = () => {
         <div className="flex justify-between items-center mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-              AI Sales Representative
+              {t('ai_sales_rep')}
             </h1>
             <div className="flex items-center space-x-2">
               {speechEnabled ? <Volume2 className="w-5 h-5 text-green-500" /> : <VolumeX className="w-5 h-5 text-gray-400" />}
@@ -188,6 +191,8 @@ const ConversationInterface = () => {
           </div>
           
           <div className="flex items-center space-x-4">
+            <LanguageSelector />
+            
             <AccessibilityControls
               highContrast={highContrast}
               setHighContrast={setHighContrast}
@@ -241,7 +246,7 @@ const ConversationInterface = () => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message here... (Press Enter to send)"
+            placeholder={t('type_message')}
             className="flex-1 resize-none"
             rows={2}
             aria-label="Message input"
@@ -253,7 +258,7 @@ const ConversationInterface = () => {
               disabled={!inputText.trim() || isProcessing}
               className="px-6"
             >
-              Send
+              {t('send')}
             </Button>
             
             <VoiceControls
@@ -267,9 +272,9 @@ const ConversationInterface = () => {
 
         {/* Status indicators */}
         <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
-          {isProcessing && "Processing your request..."}
-          {isListening && "Listening... Speak now"}
-          {!speechEnabled && "Voice output disabled"}
+          {isProcessing && t('processing')}
+          {isListening && t('listening')}
+          {!speechEnabled && t('voice_disabled')}
         </div>
       </div>
     </div>

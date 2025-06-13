@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface VoiceControlsProps {
   isListening: boolean;
@@ -20,6 +20,7 @@ const VoiceControls: React.FC<VoiceControlsProps> = ({
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
+  const { t, currentLanguage } = useLanguage();
 
   useEffect(() => {
     // Check if browser supports speech recognition
@@ -31,7 +32,7 @@ const VoiceControls: React.FC<VoiceControlsProps> = ({
       const recognition = recognitionRef.current;
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = 'en-US';
+      recognition.lang = currentLanguage.speechCode;
 
       recognition.onstart = () => {
         console.log('Speech recognition started');
@@ -101,7 +102,7 @@ const VoiceControls: React.FC<VoiceControlsProps> = ({
         recognitionRef.current.stop();
       }
     };
-  }, [onVoiceInput, setIsListening, toast]);
+  }, [onVoiceInput, setIsListening, toast, currentLanguage.speechCode]);
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
@@ -146,17 +147,17 @@ const VoiceControls: React.FC<VoiceControlsProps> = ({
         size="sm"
         className="w-full"
         disabled={!speechEnabled}
-        aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+        aria-label={isListening ? t('stop') : 'Start voice input'}
       >
         {isListening ? (
           <>
             <MicOff className="w-4 h-4 mr-1" />
-            Stop
+            {t('stop')}
           </>
         ) : (
           <>
             <Mic className="w-4 h-4 mr-1" />
-            Voice
+            {t('voice')}
           </>
         )}
       </Button>

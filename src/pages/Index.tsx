@@ -1,12 +1,15 @@
 
 import React from 'react';
 import ConversationInterface from '@/components/ConversationInterface';
+import { LanguageProvider } from '@/hooks/useLanguage';
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
-      <ConversationInterface />
-    </div>
+    <LanguageProvider>
+      <div className="min-h-screen">
+        <ConversationInterface />
+      </div>
+    </LanguageProvider>
   );
 };
 
