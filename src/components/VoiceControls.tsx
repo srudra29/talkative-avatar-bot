@@ -18,13 +18,14 @@ const VoiceControls: React.FC<VoiceControlsProps> = ({
   speechEnabled
 }) => {
   const [transcript, setTranscript] = useState('');
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     // Check if browser supports speech recognition
-    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
       
       const recognition = recognitionRef.current;
@@ -37,7 +38,7 @@ const VoiceControls: React.FC<VoiceControlsProps> = ({
         setIsListening(true);
       };
 
-      recognition.onresult = (event) => {
+      recognition.onresult = (event: any) => {
         let finalTranscript = '';
         let interimTranscript = '';
 
@@ -58,7 +59,7 @@ const VoiceControls: React.FC<VoiceControlsProps> = ({
         }
       };
 
-      recognition.onerror = (event) => {
+      recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
         

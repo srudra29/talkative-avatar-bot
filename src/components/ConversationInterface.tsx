@@ -84,12 +84,12 @@ const ConversationInterface = () => {
     }
   };
 
-  const processWithAWS = async (text: string): Promise<string> => {
-    // Simulate AWS integration - in real implementation, this would call AWS services
+  const processMessage = async (text: string): Promise<string> => {
+    // Frontend-only mock processing
     setIsProcessing(true);
     
     try {
-      // Simulate API delay
+      // Simulate processing delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Mock sales representative responses based on input
@@ -119,7 +119,7 @@ const ConversationInterface = () => {
       
       return response;
     } catch (error) {
-      console.error('AWS processing error:', error);
+      console.error('Message processing error:', error);
       return "I apologize, but I'm experiencing some technical difficulties. Let me try to help you in another way. Could you please rephrase your question?";
     } finally {
       setIsProcessing(false);
@@ -140,8 +140,8 @@ const ConversationInterface = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
 
-    // Process message with AWS services
-    const responseText = await processWithAWS(text);
+    // Process message
+    const responseText = await processMessage(text);
     
     const botMessage: Message = {
       id: (Date.now() + 1).toString(),
